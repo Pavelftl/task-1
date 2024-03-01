@@ -1,64 +1,65 @@
-import { useState } from 'react';
 import styles from './App.module.css';
+import data from './assets/data.json';
+import { useState } from 'react';
 
 export const App = () => {
-	const [value, setValue] = useState('');
-	const [list, setList] = useState([]);
-	const [error, setError] = useState('');
-	const [isValueVaild, setisValueVaild] = useState(null);
+	const [activeIndex, setActiveIndex] = useState(0);
+	const isFirstStep = activeIndex === 0;
+	const isLastStep = activeIndex === data.length - 1;
 
-	const onInputButtonClick = () => {
-		const promptValue = prompt('Введите значение');
-
-		if (promptValue.length < 3) {
-			setError('Введенное значение должно содержать минимум 3 символа');
-			setisValueVaild(false);
-		} else {
-			setValue(promptValue);
-			setError('');
-			setisValueVaild(true);
+	const onClickBack = () => {
+		if (!isFirstStep) {
+			setActiveIndex((prev) => prev - 1);
 		}
 	};
 
-	const onAddButtonClick = () => {
-		if (value) {
-			const id = Date.now();
-			setList((prev) => [...prev, { id, value }]);
+	const onClickForward = () => {
+		if (!isLastStep) {
+			setActiveIndex((prev) => prev + 1);
 		}
+	};
+
+	const onClickRestart = () => {
+		setActiveIndex(0);
 	};
 	return (
-		<div className={styles.app}>
-			<h1 className={styles.pageHeading}>Ввод значения</h1>
-			<p className={styles.noMarginText}>
-				Текущее значение <code>value</code>:
-				<output className={styles.currentValue}> &quot;{value}&quot;</output>
-			</p>
-			{error !== '' && <div className={styles.error}>{error}</div>}
-			<div className={styles.buttonsContainer}>
-				<button onClick={onInputButtonClick} className={styles.button}>
-					Ввести новое
-				</button>
-				<button
-					onClick={onAddButtonClick}
-					className={styles.button}
-					disabled={!isValueVaild}
-				>
-					Добавить в список
-				</button>
-			</div>
-			<div className={styles.listContainer}>
-				<h2 className={styles.listHeading}>Список:</h2>
-				{list.length > 0 ? (
-					<ul className={styles.list}>
-						{list.map((item) => (
-							<li key={item.id} className={styles.listItem}>
-								{item.value}
+		<div className={styles.container}>
+			<div className={styles.card}>
+				<h1>Инструкция по готовке пельменей</h1>
+				<div className={styles.steps}>
+					<div className={styles['steps-content']}>{data[activeIndex].content}</div>
+					<ul className={styles['steps-list']}>
+						{data.map((step, index) => (
+							<li
+								key={step.id}
+								onClick={() => setActiveIndex(index)}
+								className={`${styles['steps-item']} ${index <= activeIndex ? styles.done : ''} ${index === activeIndex ? styles.active : ''}`}
+							>
+								<button className={styles['steps-item-button']}>{index + 1}</button>
+								{step.title}
 							</li>
 						))}
 					</ul>
-				) : (
-					<p className={styles.noMarginText}>Нет добавленных элементов</p>
-				)}
+					<div className={styles['buttons-container']}>
+						<button
+							onClick={onClickBack}
+							className={styles.button}
+							disabled={isFirstStep}
+						>
+							Назад
+						</button>
+
+						{isLastStep ? (
+							<button onClick={onClickRestart} className={styles.button}>
+								Начать сначала
+							</button>
+						) : (
+							<button onClick={onClickForward} className={styles.button}>
+								Далее
+							</button>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
